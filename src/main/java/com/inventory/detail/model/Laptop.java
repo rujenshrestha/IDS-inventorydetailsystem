@@ -2,6 +2,7 @@ package com.inventory.detail.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -10,8 +11,8 @@ import jakarta.persistence.Table;
 public class Laptop implements Inventory {
 
 	@Id
-	@GeneratedValue
-	protected int id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	protected Long id;
 	protected String type;
 	protected String name;
 	protected String model;
@@ -27,11 +28,11 @@ public class Laptop implements Inventory {
 		this.price = price;
 	}
 
-	public int getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

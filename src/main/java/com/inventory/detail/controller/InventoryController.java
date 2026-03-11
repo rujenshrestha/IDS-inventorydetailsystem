@@ -37,7 +37,7 @@ public class InventoryController {
 
 	
 	@GetMapping("/{type}/{id}")
-	public ResponseEntity<InventoryResponse> findById(@PathVariable String type, @PathVariable int id)
+	public ResponseEntity<InventoryResponse> findById(@PathVariable String type, @PathVariable Long id)
 			throws InventoryNotFoundException, Exception {
 		InventoryResponse response = new InventoryResponse();
 		response.getInventoryList().add(service.getSelectedItemDetail(type, id));
@@ -59,7 +59,7 @@ public class InventoryController {
 
 	@PutMapping("/{type}/{id}")
 	public ResponseEntity<InventoryResponse> update(@RequestBody Laptop laptop, @PathVariable String type,
-			@PathVariable int id) throws InventoryNotFoundException, Exception {
+			@PathVariable Long id) throws InventoryNotFoundException, Exception {
 		InventoryResponse response = new InventoryResponse();
 		service.updateItemDetail(laptop, type, id);
 		response.setResponseCode(UPDATE_CODE);
@@ -69,7 +69,7 @@ public class InventoryController {
 
 	
 	@DeleteMapping("/{type}/{id}")
-	public ResponseEntity<InventoryResponse> delete(@PathVariable String type, @PathVariable int id)
+	public ResponseEntity<InventoryResponse> delete(@PathVariable String type, @PathVariable Long id)
 			throws InventoryNotFoundException, Exception {
 		InventoryResponse response = new InventoryResponse();
 

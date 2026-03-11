@@ -2,9 +2,9 @@ package com.inventory.detail.model;
 
 public interface Inventory {
 
-	public int getId();
+	public Long getId();
 
-	public void setId(int id);
+	public void setId(Long id);
 
 	public String getName();
 

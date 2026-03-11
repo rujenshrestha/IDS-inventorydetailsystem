@@ -3,29 +3,32 @@ package com.inventory.detail.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "user")
+@Table(name = "user_info")
 @JsonInclude(Include.NON_NULL)
 public class User {
 
 	@Id
-	@GeneratedValue
-	protected int id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	protected Long id;
 	protected String username;
 	protected String password;
 	protected String fullName;
 	protected String role;
 	protected Long phone;
+	@Column(name = "is_active")
 	protected boolean isActive;
 	
 	public User() {}
 	
-	public User(int id, String username, String password, String fullName, String role, Long phone, boolean isActive) {
+	public User(Long id, String username, String password, String fullName, String role, Long phone, boolean isActive) {
 		this.id = id;
 		this.username = username;
 		this.password = password;
@@ -35,11 +38,11 @@ public class User {
 		this.isActive = isActive;
 	}
 
-	public int getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

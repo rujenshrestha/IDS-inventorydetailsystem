@@ -21,7 +21,6 @@ public class InventoryServiceImpl implements InventoryService {
 
 	@Autowired
 	UserService userService;
-	
 
 	@Override
 	public List<Inventory> getSelectedInventoryTypeDetails(String type) throws Exception {
@@ -30,7 +29,7 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public Inventory getSelectedItemDetail(String type, int id) throws InventoryNotFoundException, Exception {
+	public Inventory getSelectedItemDetail(String type, Long id) throws InventoryNotFoundException, Exception {
 		Laptop laptop = repo.findById(id).orElse(null);
 		if (laptop == null)
 			throw new InventoryNotFoundException(id, type);
@@ -44,7 +43,7 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public void updateItemDetail(Inventory inventory, String type, int id)
+	public void updateItemDetail(Inventory inventory, String type, Long id)
 			throws InventoryNotFoundException, Exception {
 		Laptop laptop = (Laptop) getSelectedItemDetail(type, id);
 		Laptop newLaptop = (Laptop) inventory;
@@ -55,7 +54,7 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public void deleteItemDetail(String type, int id) throws InventoryNotFoundException, Exception {
+	public void deleteItemDetail(String type, Long id) throws InventoryNotFoundException, Exception {
 		getSelectedItemDetail(type, id);
 		repo.deleteById(id);
 	}

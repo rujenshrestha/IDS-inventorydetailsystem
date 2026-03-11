@@ -66,7 +66,7 @@ public class InventoryControllerTest {
 	private List<Inventory> mockInventory() {
 		List<Inventory> inventoryList = new ArrayList<>();
 		Inventory inventory = new Laptop();
-		inventory.setId(1);
+		inventory.setId(1L);
 		inventory.setName("DELL");
 		inventory.setPrice(799.99);
 		inventoryList.add(inventory);
