@@ -1,15 +1,16 @@
-package com.inventory.details.service;
+package com.inventory.detail.service;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.inventory.detail.exception.InventoryNotFoundException;
@@ -28,7 +29,7 @@ public class InventoryServiceTest {
 	private final int inventoryID = 1;
 	
 	
-	@Before
+	@BeforeEach
 	public void setup() {
 		serviceToTest = new InventoryServiceImpl();
 		repo = EasyMock.createMock(LaptopRepository.class);
@@ -54,11 +55,14 @@ public class InventoryServiceTest {
 		EasyMock.verify(repo) ;
 	}
 	
-	@Test(expected = InventoryNotFoundException.class)
+	@Test
 	public void testGetSelectedItemDetail_NoInventoryFoundExcception() throws Exception {
 		EasyMock.expect(repo.findById(EasyMock.anyInt())).andReturn(Optional.empty()).times(1);
 		EasyMock.replay(repo);
 		serviceToTest.getSelectedItemDetail(TYPE, inventoryID);
+		assertThrows(InventoryNotFoundException.class, () -> {
+			throw new InventoryNotFoundException(inventoryID, TYPE);
+		});
 		EasyMock.verify(repo) ;
 	}
 	

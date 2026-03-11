@@ -1,7 +1,8 @@
-package com.inventory.details.model;
+package com.inventory.detail.model;
 
-import org.junit.Test;
 import static pl.pojo.tester.api.assertion.Assertions.assertPojoMethodsFor;
+
+import org.junit.jupiter.api.Test;
 
 import com.inventory.detail.model.Address;
 import com.openpojo.reflection.filters.FilterNonConcrete;

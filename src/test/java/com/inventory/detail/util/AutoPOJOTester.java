@@ -1,4 +1,4 @@
-package com.inventory.details.util;
+package com.inventory.detail.util;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.util.StringUtils;
