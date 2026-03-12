@@ -35,7 +35,9 @@ public class InventoryServiceTest {
 
 	@Test
 	public void testGetSelectedInventoryTypeDetails() throws Exception {
-		EasyMock.expect(repo.findAll()).andReturn(getInventoryList()).times(1);
+		EasyMock.expect(repo.findAll())
+				.andReturn(getInventoryList())
+				.times(1);
 		EasyMock.replay(repo);
 		List<Inventory> inventoryList = serviceToTest.getSelectedInventoryTypeDetails(TYPE);
 		assertNotNull(inventoryList);
@@ -44,7 +46,9 @@ public class InventoryServiceTest {
 
 	@Test
 	public void testGetSelectedItemDetail() throws Exception {
-		EasyMock.expect(repo.findById(EasyMock.anyLong())).andReturn(Optional.of(getInventoryList().get(0))).times(1);
+		EasyMock.expect(repo.findById(EasyMock.anyLong()))
+				.andReturn(Optional.of(getInventoryList().get(0)))
+				.times(1);
 		EasyMock.replay(repo);
 		Inventory inventory = serviceToTest.getSelectedItemDetail(TYPE, inventoryID);
 		assertNotNull(inventory);
@@ -54,18 +58,21 @@ public class InventoryServiceTest {
 
 	@Test
 	public void testGetSelectedItemDetail_NoInventoryFoundExcception() throws Exception {
-		EasyMock.expect(repo.findById(EasyMock.anyLong())).andReturn(Optional.empty()).times(1);
+		EasyMock.expect(repo.findById(EasyMock.anyLong()))
+				.andReturn(Optional.empty())
+				.times(1);
 		EasyMock.replay(repo);
-		serviceToTest.getSelectedItemDetail(TYPE, inventoryID);
 		assertThrows(InventoryNotFoundException.class, () -> {
-			throw new InventoryNotFoundException(inventoryID, TYPE);
+			serviceToTest.getSelectedItemDetail(TYPE, inventoryID);
 		});
 		EasyMock.verify(repo);
 	}
 
 	@Test
 	public void testSaveItemDetail() throws Exception {
-		EasyMock.expect(repo.save(EasyMock.anyObject(Laptop.class))).andReturn(getInventoryList().get(0)).times(1);
+		EasyMock.expect(repo.save(EasyMock.anyObject(Laptop.class)))
+				.andReturn(getInventoryList().get(0))
+				.times(1);
 		EasyMock.replay(repo);
 		serviceToTest.saveItemDetail(getInventoryList().get(0));
 		EasyMock.verify(repo);
@@ -73,8 +80,12 @@ public class InventoryServiceTest {
 
 	@Test
 	public void testUpdateItemDetail() throws Exception {
-		EasyMock.expect(repo.findById(EasyMock.anyLong())).andReturn(Optional.of(getInventoryList().get(0))).times(1);
-		EasyMock.expect(repo.save(EasyMock.anyObject(Laptop.class))).andReturn(getInventoryList().get(0)).times(1);
+		EasyMock.expect(repo.findById(EasyMock.anyLong()))
+				.andReturn(Optional.of(getInventoryList().get(0)))
+				.times(1);
+		EasyMock.expect(repo.save(EasyMock.anyObject(Laptop.class)))
+				.andReturn(getInventoryList().get(0))
+				.times(1);
 		EasyMock.replay(repo);
 		serviceToTest.updateItemDetail(getInventoryList().get(0), TYPE, inventoryID);
 		EasyMock.verify(repo);
@@ -82,9 +93,12 @@ public class InventoryServiceTest {
 
 	@Test
 	public void testDeleteItemDetail() throws Exception {
-		EasyMock.expect(repo.findById(EasyMock.anyLong())).andReturn(Optional.of(getInventoryList().get(0))).times(1);
+		EasyMock.expect(repo.findById(EasyMock.anyLong()))
+				.andReturn(Optional.of(getInventoryList().get(0)))
+				.times(1);
 		repo.deleteById(EasyMock.anyLong());
-		EasyMock.expectLastCall().times(1);
+		EasyMock.expectLastCall()
+			.times(1);
 		EasyMock.replay(repo);
 		serviceToTest.deleteItemDetail(TYPE, inventoryID);
 		EasyMock.verify(repo);

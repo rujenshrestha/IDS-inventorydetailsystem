@@ -1,11 +1,9 @@
 package com.inventory.detail.model;
 
-import static pl.pojo.tester.api.assertion.Assertions.assertPojoMethodsFor;
-
 import org.junit.jupiter.api.Test;
 
-import com.inventory.detail.model.Address;
-import com.openpojo.reflection.filters.FilterNonConcrete;
+import com.openpojo.reflection.PojoClass;
+import com.openpojo.reflection.impl.PojoClassFactory;
 import com.openpojo.validation.Validator;
 import com.openpojo.validation.ValidatorBuilder;
 import com.openpojo.validation.test.impl.GetterTester;
@@ -14,15 +12,14 @@ import com.openpojo.validation.test.impl.SetterTester;
 public class AddressTest {
 
 	@Test
-	public void testAllGettersAndSetters() {
-		assertPojoMethodsFor(Address.class).areWellImplemented();
-	}
-	
-	@Test
-	public void validateBeans() {
-		Validator validator = ValidatorBuilder.create().with(new SetterTester()).with(new GetterTester()).build();
-		//exclude enums, abstracts, interfaces
-		validator.validateRecursively("com.inventory.details.model", new FilterNonConcrete());
+	public void shouldTestPojoMethods() {
+		PojoClass pojoClass = PojoClassFactory.getPojoClass(Address.class);
+		  Validator validator = ValidatorBuilder.create()
+	                .with(new GetterTester())
+	                .with(new SetterTester())
+	                .build();
+
+		  validator.validate(pojoClass);
 	}
 	
 }

@@ -92,10 +92,16 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/pl.pojo/pojo-tester -->
-		<dependency>
+		<!--<dependency>
 			<groupId>pl.pojo</groupId>
 			<artifactId>pojo-tester</artifactId>
 			<version>0.7.6</version>
+			<scope>test</scope>
+		</dependency>-->
+		<dependency>
+			<groupId>io.github.openjavalibs</groupId>
+			<artifactId>pojo-tester</artifactId>
+			<version>21.0.0</version> <!-- Use the latest version available from Maven Repository -->
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -118,6 +124,16 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.5</version>
+				<configuration>
+					<argLine>
+          			--add-exports java.security.jgss/sun.security.krb5=ALL-UNNAMED
+        		</argLine>
 				</configuration>
 			</plugin>
 		</plugins>
