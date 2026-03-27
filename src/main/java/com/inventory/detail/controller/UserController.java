@@ -20,9 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.inventory.detail.constants.IDSConstants;
+import com.inventory.detail.entity.UserInfo;
 import com.inventory.detail.model.CreateUserRequest;
 import com.inventory.detail.model.CreateUserResponse;
-import com.inventory.detail.model.User;
 import com.inventory.detail.model.UserResponse;
 import com.inventory.detail.service.UserService;
 
@@ -42,7 +42,7 @@ public class UserController {
 		UserResponse response = new UserResponse();
 
 		try {
-			response.setUser(service.getAllUsers(page));
+			//response.setResponse(service.getUsers(page));
 			response.setResponseCode(IDSConstants.SUCCESS_CODE);
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
@@ -56,8 +56,9 @@ public class UserController {
 		UserResponse response = new UserResponse();
 
 		try {
-			response.setUser(service.getUserDetail(id));
+			response.setUsers(service.getUserById(id));
 			response.setResponseCode(IDSConstants.SUCCESS_CODE);
+			response.setResponseMsg("");
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
 
@@ -69,7 +70,7 @@ public class UserController {
 	public ResponseEntity<CreateUserResponse> registerUser(@RequestBody CreateUserRequest request) {
 		CreateUserResponse response = new CreateUserResponse();
 		try {
-			response  = service.createUser(request);
+			//response  = service.createUser(request);
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
 
@@ -78,7 +79,7 @@ public class UserController {
 	}
 
 	@PutMapping()
-	public ResponseEntity<UserResponse> updateUserDetails(@RequestBody User user) {
+	public ResponseEntity<UserResponse> updateUserDetails(@RequestBody UserInfo user) {
 		UserResponse response = new UserResponse();
 
 		try {

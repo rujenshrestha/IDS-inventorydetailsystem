@@ -4,16 +4,16 @@ import java.util.List;
 
 public class UserResponse {
 
-	private List<User> user;
+	private List<User> users;
 	private String responseCode;
 	private String responseMsg;
 
-	public List<User> getUser() {
-		return user;
+	public List<User> getUsers() {
+		return users;
 	}
 
-	public void setUser(List<User> user) {
-		this.user = user;
+	public void setUsers(List<User> users) {
+		this.users = users;
 	}
 
 	public String getResponseCode() {

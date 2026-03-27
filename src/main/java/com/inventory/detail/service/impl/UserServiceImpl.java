@@ -7,10 +7,9 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.inventory.detail.mapper.UserMapper;
-import com.inventory.detail.model.CreateUserRequest;
-import com.inventory.detail.model.CreateUserResponse;
+import com.inventory.detail.entity.UserInfo;
 import com.inventory.detail.model.User;
+import com.inventory.detail.model.UsersAPIResponse;
 import com.inventory.detail.service.UserService;
 
 @Service(value = "UserService")
@@ -19,16 +18,16 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	UserDetailService userDetailService;
 
-	private UserMapper mapper = new UserMapper();
-
 	@Override
-	public List<User> getAllUsers(String page) {
+	public List<User> getUsers(String page) {
 		try {
 			Map<String, Integer> queryParam = new HashMap<>();
 			queryParam.put("page", Integer.parseInt(page));
 			
-			//return mapper.mapUserDetail(userDetailService.callUserDetail(queryParam, null));
-			return mapper.mapUserDetail(userDetailService.getUserDetail(queryParam, null));
+			UsersAPIResponse usersAPIResponse = userDetailService.callUserDetail(queryParam, null); // uses WebClient
+			//return mapper.mapUserDetail(userDetailService.getUserDetail(queryParam, null)); // uses RestTemplate
+			
+			return usersAPIResponse.getUsers();
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -37,9 +36,10 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public List<User> getUserDetail(String id) {
+	public List<User> getUserById(String id) {
 		try {
-			return mapper.mapUserDetail(userDetailService.callUserDetail(null, id));
+			UsersAPIResponse usersAPIResponse = userDetailService.callUserDetail(null, id);
+			return usersAPIResponse.getUsers();
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -47,32 +47,16 @@ public class UserServiceImpl implements UserService {
 		return null;
 	}
 
-	@Override
-	public List<User> validateLogin(String username, String password) {
-		return null;//UserUtil.getUser();
-	}
 
 	@Override
-	public List<User> register(User user) {
+	public List<User> register(UserInfo user) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<User> updateUserInfo(User user) {
+	public List<User> updateUser(UserInfo user) {
 		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public CreateUserResponse createUser(CreateUserRequest request) {
-		try {
-			//return userDetailService.addUserDetail(request);
-			return userDetailService.createUserDetail(request);
-
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
 		return null;
 	}
 

@@ -51,9 +51,10 @@ public class InventoryController {
 	public ResponseEntity<InventoryResponse> save(@RequestBody Laptop laptop) throws Exception {
 		InventoryResponse response = new InventoryResponse();
 		service.saveItemDetail(laptop);
+		response.getInventoryList().add(laptop);
 		response.setResponseCode(SAVE_CODE);
 		response.setResponseMsg(INV_SAVED_MSG);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 	
 
@@ -62,9 +63,10 @@ public class InventoryController {
 			@PathVariable Long id) throws InventoryNotFoundException, Exception {
 		InventoryResponse response = new InventoryResponse();
 		service.updateItemDetail(laptop, type, id);
+		response.getInventoryList().add(laptop);
 		response.setResponseCode(UPDATE_CODE);
 		response.setResponseMsg(INV_UPDATED_MSG);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	
