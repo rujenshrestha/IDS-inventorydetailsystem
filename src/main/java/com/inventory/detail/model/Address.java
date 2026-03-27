@@ -1,17 +1,15 @@
 package com.inventory.detail.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Address {
 
+	@JsonProperty("street")
 	private String streetName1;
+	@JsonProperty("suite")
 	private String streetName2;
 	private String city;
-	private String state;
-	private String province;
 	private String zipcode;
-	private String postalCode;
-	private String mailingAddress;
-	private String billingAddress;
-	private int userId;
 
 	public String getStreetName1() {
 		return streetName1;
@@ -37,60 +35,12 @@ public class Address {
 		this.city = city;
 	}
 
-	public String getState() {
-		return state;
-	}
-
-	public void setState(String state) {
-		this.state = state;
-	}
-
-	public String getProvince() {
-		return province;
-	}
-
-	public void setProvince(String province) {
-		this.province = province;
-	}
-
 	public String getZipcode() {
 		return zipcode;
 	}
 
 	public void setZipcode(String zipcode) {
 		this.zipcode = zipcode;
-	}
-
-	public String getPostalCode() {
-		return postalCode;
-	}
-
-	public void setPostalCode(String postalCode) {
-		this.postalCode = postalCode;
-	}
-
-	public String getMailingAddress() {
-		return mailingAddress;
-	}
-
-	public void setMailingAddress(String mailingAddress) {
-		this.mailingAddress = mailingAddress;
-	}
-
-	public String getBillingAddress() {
-		return billingAddress;
-	}
-
-	public void setBillingAddress(String billingAddress) {
-		this.billingAddress = billingAddress;
-	}
-
-	public int getUserId() {
-		return userId;
-	}
-
-	public void setUserId(int userId) {
-		this.userId = userId;
 	}
 
 }

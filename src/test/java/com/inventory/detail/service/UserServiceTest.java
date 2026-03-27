@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.inventory.detail.model.User;
+import com.inventory.detail.entity.UserInfo;
 import com.inventory.detail.service.UserService;
 import com.inventory.detail.service.impl.UserServiceImpl;
 
