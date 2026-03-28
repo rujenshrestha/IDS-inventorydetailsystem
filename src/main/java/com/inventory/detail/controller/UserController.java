@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.inventory.detail.constants.IDSConstants;
@@ -38,12 +37,13 @@ public class UserController {
 	private UserService service;
 
 	@GetMapping
-	public ResponseEntity<UserResponse> getUserByPage(@RequestParam String page) {
+	public ResponseEntity<UserResponse> getAllUsers() {
 		UserResponse response = new UserResponse();
 
 		try {
-			//response.setResponse(service.getUsers(page));
+			response.setUsers(service.getUsers());
 			response.setResponseCode(IDSConstants.SUCCESS_CODE);
+			response.setResponseMsg("");
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
 
@@ -52,7 +52,7 @@ public class UserController {
 	}
 	
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<UserResponse> getUserDetail(@PathVariable String id) {
+	public ResponseEntity<UserResponse> getUserById(@PathVariable String id) {
 		UserResponse response = new UserResponse();
 
 		try {
@@ -85,6 +85,7 @@ public class UserController {
 		try {
 			//response.setUser(service.updateUserInfo(user));
 			response.setResponseCode(IDSConstants.SUCCESS_CODE);
+			response.setResponseMsg("");
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
 

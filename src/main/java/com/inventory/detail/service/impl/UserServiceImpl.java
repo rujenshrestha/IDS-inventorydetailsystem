@@ -1,8 +1,6 @@
 package com.inventory.detail.service.impl;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,14 +17,9 @@ public class UserServiceImpl implements UserService {
 	UserDetailService userDetailService;
 
 	@Override
-	public List<User> getUsers(String page) {
+	public List<User> getUsers() {
 		try {
-			Map<String, Integer> queryParam = new HashMap<>();
-			queryParam.put("page", Integer.parseInt(page));
-			
-			UsersAPIResponse usersAPIResponse = userDetailService.callUserDetail(queryParam, null); // uses WebClient
-			//return mapper.mapUserDetail(userDetailService.getUserDetail(queryParam, null)); // uses RestTemplate
-			
+			UsersAPIResponse usersAPIResponse = userDetailService.callUserDetail(null, null);
 			return usersAPIResponse.getUsers();
 
 		} catch (Exception e) {
@@ -38,7 +31,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public List<User> getUserById(String id) {
 		try {
-			UsersAPIResponse usersAPIResponse = userDetailService.callUserDetail(null, id);
+			UsersAPIResponse usersAPIResponse = userDetailService.callUserDetail(null, id); // uses WebClient
+			//UsersAPIResponse usersAPIResponse = userDetailService.getUserDetail(null, id); // uses RestTemplate
 			return usersAPIResponse.getUsers();
 
 		} catch (Exception e) {

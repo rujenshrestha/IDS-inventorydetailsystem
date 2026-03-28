@@ -7,7 +7,7 @@ import com.inventory.detail.model.User;
 
 public interface UserService {
 	
-	public List<User> getUsers(String page);
+	public List<User> getUsers();
 
 	public List<User> getUserById(String id);
 	

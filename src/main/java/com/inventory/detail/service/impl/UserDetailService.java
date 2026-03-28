@@ -1,5 +1,6 @@
 package com.inventory.detail.service.impl;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 
@@ -18,11 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.inventory.detail.model.CreateUserRequest;
 import com.inventory.detail.model.CreateUserResponse;
 import com.inventory.detail.model.UsersAPIResponse;
-import com.inventory.detail.util.APIUtil;
 
 import io.micrometer.common.util.StringUtils;
 
@@ -34,9 +35,6 @@ public class UserDetailService {
 
 	@Autowired
 	private RestTemplate restTemplate;
-
-	@Autowired
-	private APIUtil util;
 
 	private WebClient webClient;
 
@@ -52,31 +50,26 @@ public class UserDetailService {
 	public UsersAPIResponse callUserDetail(Map<String, Integer> queryParam, String id) throws Exception {
 		try {
 			logger.info("calling UserDetail API with URL: {}", userUrl);
-			UsersAPIResponse response = webClient.get()
-					.uri(StringUtils.isNotBlank(id) ? "/{id}": "", id)
+			return webClient.get()
+					.uri(uriBuilder -> { 
+						if(StringUtils.isNotBlank(id)) {
+							uriBuilder.path("/{id}");
+						}
+						
+						if(queryParam != null) {
+							 queryParam.forEach((key, value) -> {
+			                        if (value != null) {
+			                            uriBuilder.queryParam(key, value);
+			                        }
+			                    });
+						}
+						
+						return StringUtils.isNotBlank(id) 
+								? uriBuilder.build(id)
+								: uriBuilder.build();
+					})
 					.retrieve()
 					.bodyToMono(UsersAPIResponse.class).block();
-			return response;
-
-		} catch (WebClientException ex) {
-			throw new Exception("User Detail Service GET call failed " + ex.getMessage());
-		}
-	}
-
-	/*
-	 * Calling UserDetail GET API via WebClient, queryParam containing page and page number
-	 */
-	public UsersAPIResponse callUserDetailWithPage(Map<String, Integer> queryParam) throws Exception {
-		try {
-			logger.info("calling UserDetail API with URL: {}", userUrl);
-			return webClient.get()
-				.uri(uriBuilder -> {
-						queryParam.forEach(uriBuilder::queryParam);
-				return uriBuilder.build();
-				})
-				.retrieve()
-				.bodyToMono(UsersAPIResponse.class)
-				.block();
 
 		} catch (WebClientException ex) {
 			throw new Exception("User Detail Service GET call failed " + ex.getMessage());
@@ -90,8 +83,12 @@ public class UserDetailService {
 
 		try {
 			logger.info("calling UserDetail API with URL: {}", userUrl);
-			CreateUserResponse response = webClient.post().contentType(MediaType.APPLICATION_JSON).bodyValue(request)
-					.retrieve().bodyToMono(CreateUserResponse.class).block();
+			CreateUserResponse response = webClient.post()
+						.contentType(MediaType.APPLICATION_JSON)
+						.bodyValue(request)
+						.retrieve()
+						.bodyToMono(CreateUserResponse.class)
+						.block();
 			return response;
 
 		} catch (WebClientException ex) {
@@ -104,17 +101,21 @@ public class UserDetailService {
 	 * page number, pathParam containing userId
 	 */
 	public UsersAPIResponse getUserDetail(Map<String, Integer> queryParam, String pathParam) throws Exception {
-		String url = util.addQueryParam(userUrl, queryParam);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-		// headers.set("X-Request-Source", "Desktop"); // custom header
 
 		HttpEntity request = new HttpEntity(headers);
 
 		try {
-			logger.info("calling UserDetail API with URL: {}", url);
-			ResponseEntity<UsersAPIResponse> response = restTemplate.exchange(url, HttpMethod.GET, request, UsersAPIResponse.class);
+			logger.info("calling UserDetail API with URL: {}", userUrl);
+			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userUrl).pathSegment(pathParam);
+			if(queryParam != null) {
+				queryParam.forEach(builder :: queryParam);
+			}
+			URI uri = builder.build().encode().toUri();
+			
+			ResponseEntity<UsersAPIResponse> response = restTemplate.exchange(uri, HttpMethod.GET, request, UsersAPIResponse.class);
 
 			if (response.getStatusCode() == HttpStatus.OK) {
 				return response.getBody();
