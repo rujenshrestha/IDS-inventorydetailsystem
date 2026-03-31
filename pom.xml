@@ -91,25 +91,6 @@
 			<version>${easymock.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/pl.pojo/pojo-tester -->
-		<!--<dependency>
-			<groupId>pl.pojo</groupId>
-			<artifactId>pojo-tester</artifactId>
-			<version>0.7.6</version>
-			<scope>test</scope>
-		</dependency>-->
-		<dependency>
-			<groupId>io.github.openjavalibs</groupId>
-			<artifactId>pojo-tester</artifactId>
-			<version>21.0.0</version> <!-- Use the latest version available from Maven Repository -->
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.openpojo</groupId>
-			<artifactId>openpojo</artifactId>
-			<version>0.8.6</version>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 	
 	<build>

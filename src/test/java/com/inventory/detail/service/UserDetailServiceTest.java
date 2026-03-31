@@ -34,8 +34,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import com.inventory.detail.model.CreateUserRequest;
-import com.inventory.detail.model.CreateUserResponse;
 import com.inventory.detail.model.User;
 import com.inventory.detail.model.UsersAPIResponse;
 import com.inventory.detail.service.impl.UserDetailService;
@@ -71,12 +69,14 @@ class UserDetailServiceTest {
 
     private final String BASE_URL = "http://test.com/api/users";
     private UsersAPIResponse mockResponse;
+    private User mockUser;
 
     @BeforeEach
     void setup() throws Exception {
         ReflectionTestUtils.setField(userDetailService, "userUrl", BASE_URL);
         ReflectionTestUtils.setField(userDetailService, "restTemplate", restTemplate);
         mockResponse = mockUsersAPIResponse();
+        mockUser = mockUser();
     }
 
 
@@ -201,18 +201,15 @@ class UserDetailServiceTest {
 
     @Test
     void testAddUserDetail() throws Exception {
-        CreateUserRequest request = new CreateUserRequest();
-        CreateUserResponse mockResponse = new CreateUserResponse();
-
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.contentType(MediaType.APPLICATION_JSON))
                 .thenReturn(requestBodySpec);
         when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(CreateUserResponse.class))
+        when(responseSpec.bodyToMono(UsersAPIResponse.class))
                 .thenReturn(Mono.just(mockResponse));
 
-        CreateUserResponse result = userDetailService.addUserDetail(request);
+        UsersAPIResponse result = userDetailService.addUserDetail(mockUser);
         assertNotNull(result);
         
         verify(webClient).post();
@@ -220,7 +217,6 @@ class UserDetailServiceTest {
     
     @Test
     void testAddUserDetail_WebClientException() throws Exception {
-        CreateUserRequest request = new CreateUserRequest();
 
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.contentType(MediaType.APPLICATION_JSON))
@@ -229,7 +225,7 @@ class UserDetailServiceTest {
         when(requestHeadersSpec.retrieve()).thenThrow(mock(WebClientException.class));
 
         assertTrue(assertThrows(Exception.class, () -> {
-        	userDetailService.addUserDetail(request);
+        	userDetailService.addUserDetail(mockUser);
         }).getMessage().contains("User Detail Service POST call failed"));
         
         verify(webClient).post();
@@ -336,46 +332,43 @@ class UserDetailServiceTest {
 
     @Test
     void testCreateUserDetail() throws Exception {
-        CreateUserResponse mockResponse = new CreateUserResponse();
-
-        ResponseEntity<CreateUserResponse> responseEntity =
+        ResponseEntity<UsersAPIResponse> responseEntity =
                 new ResponseEntity<>(mockResponse, HttpStatus.OK);
 
         when(restTemplate.exchange(
                 eq(BASE_URL),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                eq(CreateUserResponse.class)))
+                eq(UsersAPIResponse.class)))
                 .thenReturn(responseEntity);
 
-        CreateUserResponse result =
-                userDetailService.createUserDetail(new CreateUserRequest());
+        UsersAPIResponse result =
+                userDetailService.saveUser(mockUser);
         assertNotNull(result);
         
         verify(restTemplate).exchange(
                 eq(BASE_URL),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                eq(CreateUserResponse.class));
+                eq(UsersAPIResponse.class));
     }
     
     @Test
     void testCreateUserDetail_Non200Response() throws Exception {
-        CreateUserResponse mockResponse = new CreateUserResponse();
 
-        ResponseEntity<CreateUserResponse> responseEntity =
+        ResponseEntity<UsersAPIResponse> responseEntity =
                 new ResponseEntity<>(mockResponse, HttpStatus.SERVICE_UNAVAILABLE);
 
         when(restTemplate.exchange(
                 eq(BASE_URL),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                eq(CreateUserResponse.class)))
+                eq(UsersAPIResponse.class)))
                 .thenReturn(responseEntity);
 
         assertTrue(
         	    assertThrows(Exception.class, () ->
-        	    userDetailService.createUserDetail(new CreateUserRequest())
+        	    userDetailService.saveUser(mockUser)
         	    ).getMessage().contains("User detail POST call failed with status")
         	);
         
@@ -383,17 +376,21 @@ class UserDetailServiceTest {
                 eq(BASE_URL),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                eq(CreateUserResponse.class));
+                eq(UsersAPIResponse.class));
     }
     
 	private UsersAPIResponse mockUsersAPIResponse() {
+		List<User> users = new ArrayList<>();
+		users.add(mockUser());
+		return new UsersAPIResponse(users);
+	}
+	
+	private User mockUser() {
 		User u = new User();
 		u.setName("TEST_NAME");
 		u.setPhone("9999999999");
 		u.setUsername("TEST_USERNAME");
-		List<User> users = new ArrayList<>();
-		users.add(u);
-		return new UsersAPIResponse(users);
+		return u;
 	}
 
 }

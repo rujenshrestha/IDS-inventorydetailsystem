@@ -21,8 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.inventory.detail.model.CreateUserRequest;
-import com.inventory.detail.model.CreateUserResponse;
+import com.inventory.detail.model.User;
 import com.inventory.detail.model.UsersAPIResponse;
 
 import io.micrometer.common.util.StringUtils;
@@ -79,17 +78,16 @@ public class UserDetailService {
 	/*
 	 * Calling UserDetail POST API via WebClient, request containing name and job
 	 */
-	public CreateUserResponse addUserDetail(CreateUserRequest request) throws Exception {
+	public UsersAPIResponse addUserDetail(User user) throws Exception {
 
 		try {
 			logger.info("calling UserDetail API with URL: {}", userUrl);
-			CreateUserResponse response = webClient.post()
+			return webClient.post()
 						.contentType(MediaType.APPLICATION_JSON)
-						.bodyValue(request)
+						.bodyValue(user)
 						.retrieve()
-						.bodyToMono(CreateUserResponse.class)
+						.bodyToMono(UsersAPIResponse.class)
 						.block();
-			return response;
 
 		} catch (WebClientException ex) {
 			throw new Exception("User Detail Service POST call failed " + ex.getMessage());
@@ -127,7 +125,7 @@ public class UserDetailService {
 	/*
 	 * Calling UserDetail POST API via RestTemplate, request containing name and job
 	 */
-	public CreateUserResponse createUserDetail(CreateUserRequest request) throws Exception {
+	public UsersAPIResponse saveUser(User user) throws Exception {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -135,8 +133,8 @@ public class UserDetailService {
 
 		try {
 			logger.info("calling UserDetail API with URL: {}", userUrl);
-			ResponseEntity<CreateUserResponse> response = restTemplate.exchange(userUrl, HttpMethod.POST, entity,
-					CreateUserResponse.class);
+			ResponseEntity<UsersAPIResponse> response = restTemplate.exchange(userUrl, HttpMethod.POST, entity,
+					UsersAPIResponse.class);
 
 			if (response.getStatusCode() == HttpStatus.OK) {
 				return response.getBody();

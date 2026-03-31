@@ -1,7 +1,5 @@
 package com.inventory.detail.controller;
 
-import java.util.Map;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 
@@ -14,18 +12,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.inventory.detail.constants.IDSConstants;
-import com.inventory.detail.entity.UserInfo;
-import com.inventory.detail.model.CreateUserRequest;
-import com.inventory.detail.model.CreateUserResponse;
+import com.inventory.detail.model.User;
 import com.inventory.detail.model.UserResponse;
 import com.inventory.detail.service.UserService;
-
-import io.micrometer.common.util.StringUtils;
 
 @RestController
 @Produces(MediaType.APPLICATION_JSON_VALUE)
@@ -67,23 +60,10 @@ public class UserController {
 	}
 
 	@PostMapping()
-	public ResponseEntity<CreateUserResponse> registerUser(@RequestBody CreateUserRequest request) {
-		CreateUserResponse response = new CreateUserResponse();
-		try {
-			//response  = service.createUser(request);
-			return new ResponseEntity<>(response, HttpStatus.OK);
-		} catch (Exception e) {
-
-		}
-		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-	}
-
-	@PutMapping()
-	public ResponseEntity<UserResponse> updateUserDetails(@RequestBody UserInfo user) {
+	public ResponseEntity<UserResponse> saveUser(@RequestBody User user) {
 		UserResponse response = new UserResponse();
-
 		try {
-			//response.setUser(service.updateUserInfo(user));
+			response.setUsers(service.saveUser(user));
 			response.setResponseCode(IDSConstants.SUCCESS_CODE);
 			response.setResponseMsg("");
 			return new ResponseEntity<>(response, HttpStatus.OK);
@@ -92,24 +72,15 @@ public class UserController {
 		}
 		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
-	
-	@GetMapping("/login")
-	public ResponseEntity<UserResponse> login(@RequestHeader Map<String, String> headerMap){
+
+	@PutMapping()
+	public ResponseEntity<UserResponse> updateUserDetails(@RequestBody User user) {
 		UserResponse response = new UserResponse();
 
 		try {
-			
-			String username = headerMap.get("username");
-			String password = headerMap.get("password");
-			
-			if(StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
-				response.setResponseCode(IDSConstants.ERROR_CODE);
-				response.setResponseMsg("Username or Password cannot be empty");
-				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-			}
-			
-			//response.setUser(service.validateLogin(username, password) );
+			response.setUsers(service.updateUser(user));
 			response.setResponseCode(IDSConstants.SUCCESS_CODE);
+			response.setResponseMsg("");
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
 

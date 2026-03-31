@@ -2,7 +2,6 @@ package com.inventory.detail.service;
 
 import java.util.List;
 
-import com.inventory.detail.entity.UserInfo;
 import com.inventory.detail.model.User;
 
 public interface UserService {
@@ -11,8 +10,8 @@ public interface UserService {
 
 	public List<User> getUserById(String id);
 	
-	public List<User> register(UserInfo user);
+	public List<User> saveUser(User user);
 	
-	public List<User> updateUser(UserInfo user);
+	public List<User> updateUser(User user);
 	
 }
