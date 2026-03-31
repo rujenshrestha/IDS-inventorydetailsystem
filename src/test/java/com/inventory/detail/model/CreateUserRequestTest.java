@@ -3,12 +3,10 @@ package com.inventory.detail.model;
 import org.junit.jupiter.api.Test;
 import com.inventory.detail.util.PojoTestUtil;
 
-public class AddressTest {
+public class CreateUserRequestTest {
 
 	@Test
 	void testPojo() {
-		PojoTestUtil.testPojo(Address.class);
+		PojoTestUtil.testPojo(CreateUserRequest.class);
 	}
-	
 }
- 

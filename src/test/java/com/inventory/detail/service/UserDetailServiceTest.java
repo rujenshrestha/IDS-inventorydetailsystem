@@ -3,10 +3,13 @@ package com.inventory.detail.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.net.URI;
 
-import org.apache.el.lang.FunctionMapperImpl.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,190 +21,379 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.Builder;
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
+import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
+import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
 import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.util.UriBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import com.inventory.detail.model.CreateUserRequest;
+import com.inventory.detail.model.CreateUserResponse;
+import com.inventory.detail.model.User;
 import com.inventory.detail.model.UsersAPIResponse;
 import com.inventory.detail.service.impl.UserDetailService;
-import com.inventory.detail.util.APIUtil;
 
 import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 class UserDetailServiceTest {
 
-	@InjectMocks
-	private UserDetailService service;
+    @Mock
+    private WebClient webClient;
 
-	@Mock
-	private RestTemplate restTemplate;
+    @Mock
+    private RequestHeadersUriSpec requestHeadersUriSpec;
 
-	@Mock
-	private APIUtil util;
+    @Mock
+    private RequestHeadersSpec requestHeadersSpec;
 
-	@Mock
-	private Builder builder;
+    @Mock
+    private RequestBodyUriSpec requestBodyUriSpec;
 
-	@Mock
-	private WebClient webClient;
+    @Mock
+    private RequestBodySpec requestBodySpec;
 
-	@Mock
-	private RequestHeadersUriSpec<?> requestHeadersUriSpec;
+    @Mock
+    private ResponseSpec responseSpec;
 
-	@Mock
-	private RequestHeadersSpec<?> requestHeadersSpec;
+    @Mock
+    private RestTemplate restTemplate;
 
-	@Mock
-	private ResponseSpec responseSpec;
+    @InjectMocks
+    private UserDetailService userDetailService;
 
-	private static final String PATH_PARAM = "123";
-	private static final String FINAL_URL = "http://test.com/users/123?page=1";
-	private static final String BASE_URL = "http://test.com/users";
-	private final String jsonResponse = "{\"id\":123}";
-	private Map<String, Integer> queryParams;
+    private final String BASE_URL = "http://test.com/api/users";
+    private UsersAPIResponse mockResponse;
 
-	@BeforeEach
-	void setUp() {
-		ReflectionTestUtils.setField(service, "userUrl", BASE_URL);
-		queryParams = new HashMap<>();
-		queryParams.put("page", 1);
-	}
+    @BeforeEach
+    void setup() throws Exception {
+        ReflectionTestUtils.setField(userDetailService, "userUrl", BASE_URL);
+        ReflectionTestUtils.setField(userDetailService, "restTemplate", restTemplate);
+        mockResponse = mockUsersAPIResponse();
+    }
 
-	@Test
-    void testCallUserDetail_success() throws Exception {
-    	
-        when(util.addPathParam(anyString(), eq(PATH_PARAM))).thenReturn("http://test.com/users/123");
-        when(util.addQueryParam(anyString(), eq(queryParams))).thenReturn(FINAL_URL);
 
-        when(builder.baseUrl(FINAL_URL)).thenReturn(builder);
-        when(builder.build()).thenReturn(webClient);
+    @Test
+    void testCallUserDetail() throws Exception {
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        UriBuilder uriBuilder = mock(UriBuilder.class);
 
-        //when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        doReturn(requestHeadersUriSpec).when(webClient).get();
-        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(String.class)).thenReturn(Mono.just(jsonResponse));
+        when(uriBuilder.path("/{id}")).thenReturn(uriBuilder);
+        when(uriBuilder.queryParam("page", 1)).thenReturn(uriBuilder);
+        when(uriBuilder.build("10")).thenReturn(URI.create("/10?page=1"));
 
-        UserDetailService spyService = spy(service);
-        UsersAPIResponse mockResponse = new UsersAPIResponse();
+        when(requestHeadersUriSpec.uri(ArgumentMatchers.<Function<UriBuilder, URI>>any())).thenAnswer(invocation -> {
+            Function<UriBuilder, URI> func = invocation.getArgument(0);
+            func.apply(uriBuilder); //for executing lambda
+            return requestHeadersSpec;
+        });
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(UsersAPIResponse.class))
+                .thenReturn(Mono.just(mockResponse));
 
-        doReturn(mockResponse).when(spyService).getUserDetailResponse(jsonResponse);
-
-        UsersAPIResponse result = spyService.callUserDetail(queryParams, PATH_PARAM);
-
+        UsersAPIResponse result =
+                userDetailService.callUserDetail(Map.of("page", 1), "10");
         assertNotNull(result);
-        assertEquals(mockResponse, result);
+        assertTrue(result.getUsers().get(0).getName().equals("TEST_NAME"));
+        
+        verify(webClient).get();
+    }
+    
+    @Test
+    void testCallUserDetail_PathParamNull() throws Exception {
+    	 when(webClient.get()).thenReturn(requestHeadersUriSpec);
+         UriBuilder uriBuilder = mock(UriBuilder.class);
 
-        verify(util).addPathParam(anyString(), eq(PATH_PARAM));
-        verify(util).addQueryParam(anyString(), eq(queryParams));
-        verify(builder).baseUrl(FINAL_URL);
+         when(uriBuilder.queryParam("page", 1)).thenReturn(uriBuilder);
+         when(uriBuilder.build()).thenReturn(URI.create("?page=1"));
+
+         when(requestHeadersUriSpec.uri(ArgumentMatchers.<Function<UriBuilder, URI>>any())).thenAnswer(invocation -> {
+             Function<UriBuilder, URI> func = invocation.getArgument(0);
+             func.apply(uriBuilder); //for executing lambda
+             return requestHeadersSpec;
+         });
+         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+         when(responseSpec.bodyToMono(UsersAPIResponse.class))
+                 .thenReturn(Mono.just(mockResponse));
+
+         UsersAPIResponse result =
+                 userDetailService.callUserDetail(Map.of("page", 1), null);
+         assertNotNull(result);
+         assertTrue(result.getUsers().get(0).getName().equals("TEST_NAME"));
+         
+         verify(webClient).get();
+    }
+    
+    @Test
+    void testCallUserDetail_QueryParamNull() throws Exception {
+    	  when(webClient.get()).thenReturn(requestHeadersUriSpec);
+          UriBuilder uriBuilder = mock(UriBuilder.class);
+          when(uriBuilder.build()).thenReturn(URI.create(""));
+
+          when(requestHeadersUriSpec.uri(ArgumentMatchers.<Function<UriBuilder, URI>>any())).thenAnswer(invocation -> {
+              Function<UriBuilder, URI> func = invocation.getArgument(0);
+              func.apply(uriBuilder); //for executing lambda
+              return requestHeadersSpec;
+          });
+          when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+          when(responseSpec.bodyToMono(UsersAPIResponse.class))
+                  .thenReturn(Mono.just(mockResponse));
+
+          UsersAPIResponse result =
+                  userDetailService.callUserDetail(null, null);
+          assertNotNull(result);
+          assertTrue(result.getUsers().get(0).getName().equals("TEST_NAME"));
+          
+          verify(webClient).get();
+    }
+    
+    @Test
+    void testCallUserDetail_NullValue() throws Exception {
+    	Map<String, Integer> map = new HashMap<>();
+    	map.put("page", 1);
+    	map.put("line", null);
+    	
+    	 when(webClient.get()).thenReturn(requestHeadersUriSpec);
+         UriBuilder uriBuilder = mock(UriBuilder.class);
+
+         when(uriBuilder.queryParam("page", 1)).thenReturn(uriBuilder);
+         when(uriBuilder.build()).thenReturn(URI.create("?page=1"));
+
+         when(requestHeadersUriSpec.uri(ArgumentMatchers.<Function<UriBuilder, URI>>any())).thenAnswer(invocation -> {
+             Function<UriBuilder, URI> func = invocation.getArgument(0);
+             func.apply(uriBuilder); //for executing lambda
+             return requestHeadersSpec;
+         });
+         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+         when(responseSpec.bodyToMono(UsersAPIResponse.class))
+                 .thenReturn(Mono.just(mockResponse));
+
+         UsersAPIResponse result =
+                 userDetailService.callUserDetail(map, null);
+         assertNotNull(result);
+         assertTrue(result.getUsers().get(0).getName().equals("TEST_NAME"));
+         
+         verify(webClient).get();
+    }
+    
+    @Test
+    void testCallUserDetail_WebClientException() throws Exception {
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(
+                ArgumentMatchers.<Function<UriBuilder, URI>>any()
+        )).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenThrow(mock(WebClientException.class));
+
+       assertTrue(assertThrows(Exception.class, () -> {
+        	userDetailService.callUserDetail(Map.of("page", 1), "1");
+        }).getLocalizedMessage().contains("User Detail Service GET call failed")) ;
+
         verify(webClient).get();
     }
 
-	@Test
-	void testCallUserDetail_webClientException() {
-		Map<String, Integer> queryParams = new HashMap<>();
 
-		when(util.addPathParam(anyString(), eq(PATH_PARAM))).thenReturn("url");
-		when(util.addQueryParam(anyString(), eq(queryParams))).thenReturn("url");
+    @Test
+    void testAddUserDetail() throws Exception {
+        CreateUserRequest request = new CreateUserRequest();
+        CreateUserResponse mockResponse = new CreateUserResponse();
 
-		when(builder.baseUrl(anyString())).thenReturn(builder);
-		when(builder.build()).thenReturn(webClient);
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.contentType(MediaType.APPLICATION_JSON))
+                .thenReturn(requestBodySpec);
+        when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(CreateUserResponse.class))
+                .thenReturn(Mono.just(mockResponse));
 
-		when(webClient.get()).thenThrow(new WebClientException("Error") {
-		});
+        CreateUserResponse result = userDetailService.addUserDetail(request);
+        assertNotNull(result);
+        
+        verify(webClient).post();
+    }
+    
+    @Test
+    void testAddUserDetail_WebClientException() throws Exception {
+        CreateUserRequest request = new CreateUserRequest();
 
-		Exception ex = assertThrows(Exception.class, () -> service.callUserDetail(queryParams, PATH_PARAM));
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.contentType(MediaType.APPLICATION_JSON))
+                .thenReturn(requestBodySpec);
+        when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenThrow(mock(WebClientException.class));
 
-		assertTrue(ex.getMessage().contains("User Detail Service GET call failed"));
+        assertTrue(assertThrows(Exception.class, () -> {
+        	userDetailService.addUserDetail(request);
+        }).getMessage().contains("User Detail Service POST call failed"));
+        
+        verify(webClient).post();
+    }
+
+
+    @Test
+    void testGetUserDetail() throws Exception {
+        ResponseEntity<UsersAPIResponse> responseEntity =
+                new ResponseEntity<>(mockResponse, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+        		 argThat(uri -> 
+                 uri.toString().contains("/2") &&
+                 uri.toString().contains("page=1")
+             ),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UsersAPIResponse.class)))
+                .thenReturn(responseEntity);
+
+        UsersAPIResponse result =
+                userDetailService.getUserDetail(Map.of("page", 1), "2");
+
+        assertNotNull(result);
+        verify(restTemplate).exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UsersAPIResponse.class));
+    }
+    
+    @Test
+    void testGetUserDetail_PathParamNull() throws Exception {
+        ResponseEntity<UsersAPIResponse> responseEntity =
+                new ResponseEntity<>(mockResponse, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UsersAPIResponse.class)))
+                .thenReturn(responseEntity);
+
+        UsersAPIResponse result =
+                userDetailService.getUserDetail(Map.of("page", 1), null);
+
+        assertNotNull(result);
+        verify(restTemplate).exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UsersAPIResponse.class));
+    }
+    
+    @Test
+    void testGetUserDetail_QueryParamNull() throws Exception {
+        ResponseEntity<UsersAPIResponse> responseEntity =
+                new ResponseEntity<>(mockResponse, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UsersAPIResponse.class)))
+                .thenReturn(responseEntity);
+
+        UsersAPIResponse result =
+                userDetailService.getUserDetail(null, "2");
+
+        assertNotNull(result);
+        verify(restTemplate).exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UsersAPIResponse.class));
+    }
+    
+    @Test
+    void testGetUserDetail_Non200Response() throws Exception {
+        ResponseEntity<UsersAPIResponse> responseEntity =
+                new ResponseEntity<>(mockResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        when(restTemplate.exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UsersAPIResponse.class)))
+                .thenReturn(responseEntity);
+
+        assertTrue(
+        	    assertThrows(Exception.class, () ->
+        	    userDetailService.getUserDetail(Map.of("page", 1), "2")
+        	    ).getMessage().contains("GET User call failed with status")
+        	);
+        
+        verify(restTemplate).exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UsersAPIResponse.class));
+    }
+
+
+    @Test
+    void testCreateUserDetail() throws Exception {
+        CreateUserResponse mockResponse = new CreateUserResponse();
+
+        ResponseEntity<CreateUserResponse> responseEntity =
+                new ResponseEntity<>(mockResponse, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                eq(BASE_URL),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                eq(CreateUserResponse.class)))
+                .thenReturn(responseEntity);
+
+        CreateUserResponse result =
+                userDetailService.createUserDetail(new CreateUserRequest());
+        assertNotNull(result);
+        
+        verify(restTemplate).exchange(
+                eq(BASE_URL),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                eq(CreateUserResponse.class));
+    }
+    
+    @Test
+    void testCreateUserDetail_Non200Response() throws Exception {
+        CreateUserResponse mockResponse = new CreateUserResponse();
+
+        ResponseEntity<CreateUserResponse> responseEntity =
+                new ResponseEntity<>(mockResponse, HttpStatus.SERVICE_UNAVAILABLE);
+
+        when(restTemplate.exchange(
+                eq(BASE_URL),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                eq(CreateUserResponse.class)))
+                .thenReturn(responseEntity);
+
+        assertTrue(
+        	    assertThrows(Exception.class, () ->
+        	    userDetailService.createUserDetail(new CreateUserRequest())
+        	    ).getMessage().contains("User detail POST call failed with status")
+        	);
+        
+        verify(restTemplate).exchange(
+                eq(BASE_URL),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                eq(CreateUserResponse.class));
+    }
+    
+	private UsersAPIResponse mockUsersAPIResponse() {
+		User u = new User();
+		u.setName("TEST_NAME");
+		u.setPhone("9999999999");
+		u.setUsername("TEST_USERNAME");
+		List<User> users = new ArrayList<>();
+		users.add(u);
+		return new UsersAPIResponse(users);
 	}
-	
-//	@Test
-//    void testCallUserDetailWithPage_success() throws Exception {
-//
-//        when(builder.baseUrl(BASE_URL)).thenReturn(builder);
-//        when(builder.build()).thenReturn(webClient);
-//        doReturn(requestHeadersUriSpec).when(webClient).get();
-//        when(requestHeadersUriSpec.uri(
-//                ArgumentMatchers.<Function<UriBuilder, URI>>any()
-//        )).thenReturn(requestHeadersSpec);
-//        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-//        when(responseSpec.bodyToMono(String.class)).thenReturn(Mono.just(jsonResponse));
-//
-//        UserDetailService spyService = spy(service);
-//        UserDetailResponse mockResponse = new UserDetailResponse();
-//
-//        doReturn(mockResponse).when(spyService).getUserDetailResponse(jsonResponse);
-//
-//        UserDetailResponse result = spyService.callUserDetailWithPage(queryParams);
-//
-//        assertNotNull(result);
-//        assertEquals(mockResponse, result);
-//
-//        verify(builder).baseUrl(FINAL_URL);
-//        verify(webClient).get();
-//    }
 
-	@Test
-	void testGetUserDetail_success() throws Exception {
-		Map<String, Integer> queryParams = new HashMap<>();
-		queryParams.put("page", 1);
-
-		String finalUrl = BASE_URL + "?page=1";
-		String mockResponseBody = "{\"data\":{\"id\":1,\"name\":\"John\"}}";
-
-		when(util.addQueryParam(BASE_URL, queryParams)).thenReturn(finalUrl);
-
-		ResponseEntity<String> mockResponse = new ResponseEntity<>(mockResponseBody, HttpStatus.OK);
-
-		when(restTemplate.exchange(eq(finalUrl), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
-				.thenReturn(mockResponse);
-
-		UserDetailService spyService = spy(service);
-		UsersAPIResponse mockParsedResponse = new UsersAPIResponse();
-
-		doReturn(mockParsedResponse).when(spyService).getUserDetailResponse(mockResponseBody);
-
-		UsersAPIResponse result = spyService.getUserDetail(queryParams, "1");
-
-		assertNotNull(result);
-		assertEquals(mockParsedResponse, result);
-
-		verify(util).addQueryParam(BASE_URL, queryParams);
-		verify(restTemplate).exchange(eq(finalUrl), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class));
-	}
-
-	@Test
-	void testGetUserDetail_non200Response_shouldThrowException() {
-		Map<String, Integer> queryParams = new HashMap<>();
-		String finalUrl = BASE_URL;
-
-		when(util.addQueryParam(BASE_URL, queryParams)).thenReturn(finalUrl);
-
-		ResponseEntity<String> mockResponse = new ResponseEntity<>("error", HttpStatus.BAD_REQUEST);
-
-		when(restTemplate.exchange(eq(finalUrl), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
-				.thenReturn(mockResponse);
-		Exception exception = assertThrows(Exception.class, () -> service.getUserDetail(queryParams, "1"));
-		assertTrue(exception.getMessage().contains("User detail GET call failed"));
-	}
-
-	@Test
-	void testGetUserDetail_restTemplateThrowsException() {
-		Map<String, Integer> queryParams = new HashMap<>();
-		String finalUrl = BASE_URL;
-
-		when(util.addQueryParam(BASE_URL, queryParams)).thenReturn(finalUrl);
-
-		when(restTemplate.exchange(eq(finalUrl), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
-				.thenThrow(new RuntimeException("API down"));
-		Exception exception = assertThrows(Exception.class, () -> service.getUserDetail(queryParams, "1"));
-		assertTrue(exception.getMessage().contains("API down"));
-	}
 }

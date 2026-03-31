@@ -109,13 +109,9 @@ public class UserDetailService {
 
 		try {
 			logger.info("calling UserDetail API with URL: {}", userUrl);
-			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(userUrl).pathSegment(pathParam);
-			if(queryParam != null) {
-				queryParam.forEach(builder :: queryParam);
-			}
-			URI uri = builder.build().encode().toUri();
 			
-			ResponseEntity<UsersAPIResponse> response = restTemplate.exchange(uri, HttpMethod.GET, request, UsersAPIResponse.class);
+			ResponseEntity<UsersAPIResponse> response = restTemplate.exchange(getURI(userUrl, pathParam, queryParam),
+					HttpMethod.GET, request, UsersAPIResponse.class);
 
 			if (response.getStatusCode() == HttpStatus.OK) {
 				return response.getBody();
@@ -151,5 +147,17 @@ public class UserDetailService {
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	private URI getURI(String url, String pathParam, Map<String, Integer> queryParam) {
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		
+		if(StringUtils.isNotBlank(pathParam)) {
+			builder.pathSegment(pathParam);
+		}
+		if(queryParam != null) {
+			queryParam.forEach(builder :: queryParam);
+		}
+		return builder.build().encode().toUri();
 	}
 }
